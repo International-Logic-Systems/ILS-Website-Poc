@@ -1,0 +1,608 @@
+@import "tailwindcss";
+
+/* ── ILS design system ─────────────────────────────────────────────────
+   Warm off-white body, near-black forest for the nav and hero bands only,
+   green for accent and action. Two surfaces, one accent — anything that
+   needs a third colour is doing too much.
+
+   Tailwind v4 puts its utilities in a layer, and unlayered author rules
+   beat any layer. Every custom class below is therefore wrapped in
+   @layer components so a utility in the markup still wins — the bug the
+   old side rail hit, where a bare `.neon-rail { position: relative }`
+   silently overrode `fixed`.
+   ──────────────────────────────────────────────────────────────────── */
+
+@theme {
+  /* surfaces */
+  --color-forest: #0e1b12; /* nav + hero only */
+  --color-forest-deep: #122417; /* hero gradient top */
+  --color-ink: #10150f; /* primary text */
+  --color-paper: #f7f6f1; /* body */
+  --color-panel: #ffffff; /* cards, strips */
+  --color-raise: #efede5; /* inset / hover on light */
+  --color-line: #e4e2da; /* hairline on light */
+  --color-line-dark: #223524; /* hairline on forest */
+
+  /* text */
+  --color-fg: #10150f;
+  --color-fg-inverse: #ffffff;
+  --color-soft: #b9c4bb; /* body copy on forest */
+  --color-mute: #6e7370; /* secondary on paper */
+
+  /* accent */
+  --color-signal: #1e7a46; /* links, buttons */
+  --color-signal-dim: #c7dbcd; /* soft green hairline */
+  --color-signal-deep: #166137; /* hover */
+  --color-bright: #4ade80; /* accent word, marks, micro-labels */
+  --color-live: #1e7a46; /* bright green fails contrast on paper — use the solid */
+
+  --font-display: "Inter Tight", "Inter", -apple-system, sans-serif;
+  --font-body: "Inter", -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, monospace;
+
+  --radius-card: 4px;
+}
+
+@layer base {
+  body {
+    background: var(--color-paper);
+    color: var(--color-ink);
+    font-family: var(--font-body);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-signal);
+    outline-offset: 2px;
+  }
+
+  ::selection {
+    background: var(--color-bright);
+    color: var(--color-ink);
+  }
+}
+
+@layer components {
+  /* ── Type ─────────────────────────────────────────────────────────── */
+
+  .display {
+    font-family: var(--font-display);
+    letter-spacing: -0.02em;
+  }
+
+  /* Uppercase mono micro-label. On paper it reads muted; drop it on a
+     forest band and it inherits the band's own colour instead. */
+  .mono-label {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--color-mute);
+  }
+
+  /* Section number / eyebrow — always green, on either surface. */
+  .kicker {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--color-signal);
+  }
+
+  .on-forest .mono-label,
+  .on-forest .kicker {
+    color: var(--color-bright);
+  }
+
+  /* The one accent word in a headline. Flat green, not a gradient —
+     gradient text loses contrast against the forest at small sizes. */
+  .grad-text,
+  .glow-text {
+    color: var(--color-bright);
+  }
+
+  /* ── Surfaces ─────────────────────────────────────────────────────── */
+
+  /* Body texture. A single hairline grid at very low contrast; enough to
+     stop the off-white reading as flat, not enough to compete with copy. */
+  .grid-bg {
+    background-color: var(--color-paper);
+    background-image:
+      linear-gradient(rgb(16 21 15 / 0.022) 1px, transparent 1px),
+      linear-gradient(90deg, rgb(16 21 15 / 0.022) 1px, transparent 1px);
+    background-size: 64px 64px;
+  }
+
+  /* Dark band used by the home hero and every interior PageHero. */
+  .on-forest {
+    background:
+      radial-gradient(900px 460px at 85% 10%, rgb(74 222 128 / 0.07), transparent 60%),
+      linear-gradient(160deg, var(--color-forest-deep) 0%, var(--color-forest) 55%);
+    background-color: var(--color-forest);
+    color: var(--color-fg-inverse);
+  }
+
+  .on-forest .text-mute,
+  .on-forest .lede {
+    color: var(--color-soft);
+  }
+
+  /* Home hero only: a lifted forest, so the band reads lighter than the header
+     and footer that bracket it rather than merging into one dark mass. The
+     migration card moves darker to compensate — see MigrationHero. */
+  .on-forest.is-soft {
+    background:
+      radial-gradient(900px 460px at 85% 10%, rgb(74 222 128 / 0.09), transparent 60%),
+      linear-gradient(160deg, #21402c 0%, #172d1f 60%);
+    background-color: #172d1f;
+  }
+
+  /* Kept as an alias so existing hero markup keeps working. */
+  .aurora {
+    background:
+      radial-gradient(900px 460px at 85% 10%, rgb(74 222 128 / 0.07), transparent 60%),
+      linear-gradient(160deg, var(--color-forest-deep) 0%, var(--color-forest) 55%);
+    background-color: var(--color-forest);
+    color: var(--color-fg-inverse);
+  }
+
+  .hairline-card {
+    background: var(--color-panel);
+    border: 1px solid var(--color-line);
+    border-radius: var(--radius-card);
+    transition: border-color 0.15s, box-shadow 0.15s;
+  }
+
+  /* Deliberately no :hover here. A card only responds to the pointer when it
+     goes somewhere — see .card-rail. */
+
+  /* ── Header (forest, sticky) ──────────────────────────────────────── */
+
+  .neon-header {
+    background: var(--color-forest);
+    border-bottom: 1px solid var(--color-line-dark);
+  }
+
+  .neon-wordmark {
+    font-family: var(--font-display);
+    font-weight: 800;
+    letter-spacing: 0.01em;
+    color: var(--color-fg-inverse);
+  }
+
+  .neon-link {
+    font-size: 14.5px;
+    font-weight: 500;
+    color: var(--color-soft);
+    border-bottom: 2px solid transparent;
+    transition: color 0.15s, border-color 0.15s;
+  }
+
+  .neon-link:hover {
+    color: var(--color-fg-inverse);
+    /* Same line as the active tab, at half strength — hovering previews where
+       the indicator will land. */
+    border-bottom-color: rgb(74 222 128 / 0.45);
+  }
+
+  .neon-link-active {
+    color: var(--color-bright);
+    border-bottom-color: var(--color-bright);
+  }
+
+  .neon-link-index {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    margin-left: 3px;
+    vertical-align: super;
+  }
+
+  .neon-cta {
+    background: var(--color-signal);
+    color: var(--color-fg-inverse);
+    border-radius: var(--radius-card);
+    font-weight: 600;
+    transition: background 0.15s;
+  }
+
+  .neon-cta:hover {
+    background: var(--color-signal-deep);
+  }
+
+  .neon-menu-btn {
+    color: var(--color-soft);
+    border: 1px solid var(--color-line-dark);
+    border-radius: var(--radius-card);
+  }
+
+  .neon-menu-btn:hover {
+    color: var(--color-fg-inverse);
+    border-color: var(--color-bright);
+  }
+
+  .neon-mobile-link {
+    color: var(--color-soft);
+    border-bottom: 1px solid var(--color-line-dark);
+  }
+
+  .neon-mobile-link:hover,
+  .neon-mobile-link[aria-current="page"] {
+    color: var(--color-bright);
+  }
+
+  /* ── Buttons ──────────────────────────────────────────────────────── */
+
+  .btn-primary {
+    display: inline-block;
+    background: var(--color-signal);
+    color: var(--color-fg-inverse);
+    border: 1px solid var(--color-signal);
+    border-radius: var(--radius-card);
+    font-size: 15px;
+    font-weight: 600;
+    padding: 14px 22px;
+    transition: background 0.15s, border-color 0.15s;
+  }
+
+  .btn-primary:hover {
+    background: var(--color-signal-deep);
+    border-color: var(--color-signal-deep);
+  }
+
+  /* The secondary of a pair. Outlined rather than filled so the primary keeps
+     its weight; inherits colour, so it works on paper and on forest. */
+  .btn-ghost {
+    display: inline-block;
+    background: transparent;
+    color: currentColor;
+    border: 1px solid rgb(255 255 255 / 0.22);
+    border-radius: var(--radius-card);
+    font-size: 15px;
+    font-weight: 600;
+    padding: 14px 22px;
+    transition: border-color 0.15s, background 0.15s;
+  }
+
+  .btn-ghost:hover {
+    border-color: var(--color-bright);
+    background: rgb(74 222 128 / 0.08);
+  }
+
+  /* Compliance marks. A hairline grid rather than pills — these are register
+     entries, not badges, and they should read as a row of facts. */
+  .chip {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    letter-spacing: 0.06em;
+    color: var(--color-soft);
+    padding: 9px 14px;
+    box-shadow: 0 0 0 1px rgb(255 255 255 / 0.12);
+    white-space: nowrap;
+  }
+
+  /* Underlined text link with an arrow. Inherits its colour so it works
+     on both surfaces. */
+  .link-arrow {
+    font-size: 15.5px;
+    font-weight: 600;
+    text-decoration: underline;
+    text-underline-offset: 5px;
+    text-decoration-thickness: 1px;
+    transition: color 0.15s;
+  }
+
+  .link-arrow:hover {
+    color: var(--color-bright);
+  }
+
+  /* ── Migration panel (hero, on forest) ────────────────────────────── */
+
+  .panel {
+    background: rgb(255 255 255 / 0.03);
+    border: 1px solid rgb(255 255 255 / 0.1);
+    border-radius: 8px;
+  }
+
+  .panel-rule {
+    border-color: rgb(255 255 255 / 0.1);
+  }
+
+  .legacy-code {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    line-height: 2.1;
+    color: var(--color-soft);
+    white-space: nowrap;
+  }
+
+  .legacy-code .dim {
+    opacity: 0.45;
+  }
+
+  .flow-line {
+    width: 1px;
+    height: 52px;
+    background: rgb(255 255 255 / 0.12);
+  }
+
+  .flow-dot {
+    position: relative;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    border: 1px solid var(--color-bright);
+    display: grid;
+    place-items: center;
+  }
+
+  /* ── Migration panel motion ───────────────────────────────────────────
+     This panel replaced an animated agent mesh, so it inherits that
+     lifecycle language — dispatch, travel, arrive — on the mesh's own
+     7.2s cycle. A packet reaches the junction every 1.8s; each arrival
+     rings the junction and lights the next service, while the legacy
+     lines scan in turn on the far side. Nothing moves faster than the
+     eye can follow, and none of it loops in sync, so the panel reads as
+     a system working rather than a banner blinking. */
+
+  .flow-track {
+    position: relative;
+  }
+
+  .flow-packet {
+    position: absolute;
+    left: 50%;
+    top: 0;
+    width: 5px;
+    height: 5px;
+    margin-left: -2.5px;
+    border-radius: 50%;
+    background: var(--color-bright);
+    box-shadow: 0 0 8px rgb(74 222 128 / 0.9);
+    animation: packet-fall 1.8s linear infinite;
+  }
+
+  /* Absorbed at the junction, re-emitted below it. */
+  @keyframes packet-fall {
+    0% { transform: translateY(0); opacity: 0; }
+    10% { opacity: 1; }
+    40% { transform: translateY(52px); opacity: 1; }
+    44% { transform: translateY(52px); opacity: 0; }
+    56% { transform: translateY(94px); opacity: 0; }
+    62% { opacity: 1; }
+    90% { opacity: 1; }
+    100% { transform: translateY(146px); opacity: 0; }
+  }
+
+  .flow-dot::after {
+    content: "";
+    position: absolute;
+    inset: -1px;
+    border-radius: 50%;
+    border: 1px solid var(--color-bright);
+    animation: dot-ring 1.8s ease-out infinite;
+  }
+
+  @keyframes dot-ring {
+    0%, 38% { transform: scale(1); opacity: 0; }
+    46% { opacity: 0.7; }
+    100% { transform: scale(1.9); opacity: 0; }
+  }
+
+  .service {
+    animation: service-arrive 7.2s ease-out infinite;
+    animation-delay: calc(var(--i) * 1.8s);
+  }
+
+  @keyframes service-arrive {
+    0%, 7% {
+      border-color: rgb(255 255 255 / 0.12);
+      background: rgb(255 255 255 / 0.03);
+    }
+    11% {
+      border-color: var(--color-bright);
+      background: rgb(74 222 128 / 0.1);
+    }
+    33%, 100% {
+      border-color: rgb(255 255 255 / 0.12);
+      background: rgb(255 255 255 / 0.03);
+    }
+  }
+
+  .service::before {
+    animation: dot-flare 7.2s ease-out infinite;
+    animation-delay: calc(var(--i) * 1.8s);
+  }
+
+  @keyframes dot-flare {
+    0%, 7% { box-shadow: 0 0 0 0 rgb(74 222 128 / 0); }
+    11% { box-shadow: 0 0 0 3px rgb(74 222 128 / 0.28); }
+    33%, 100% { box-shadow: 0 0 0 0 rgb(74 222 128 / 0); }
+  }
+
+  .legacy-code div {
+    animation: legacy-scan 7.2s linear infinite;
+    animation-delay: calc(var(--i) * 1.44s);
+  }
+
+  @keyframes legacy-scan {
+    0%, 3% { color: var(--color-soft); }
+    6% { color: var(--color-bright); }
+    20%, 100% { color: var(--color-soft); }
+  }
+
+  .flow-dot svg {
+    width: 14px;
+    height: 14px;
+    stroke: var(--color-bright);
+  }
+
+  .service {
+    border: 1px solid rgb(255 255 255 / 0.12);
+    border-radius: var(--radius-card);
+    background: rgb(255 255 255 / 0.03);
+    font-family: var(--font-mono);
+    font-size: 12.5px;
+    color: var(--color-fg-inverse);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .service::before {
+    content: "";
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--color-bright);
+    flex-shrink: 0;
+  }
+
+  /* ── Stats ────────────────────────────────────────────────────────── */
+
+  .stat-num {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: clamp(64px, 7vw, 92px);
+    line-height: 1;
+    letter-spacing: -0.03em;
+    color: var(--color-ink);
+  }
+
+  .stat-num sup {
+    color: var(--color-bright);
+    font-size: 0.42em;
+    top: -0.9em;
+    position: relative;
+    margin-left: 2px;
+  }
+
+  /* ── Leadership ───────────────────────────────────────────────────── */
+
+  /* Monogram standing in until portraits are supplied. A forest tile with the
+     brand ring reads as a deliberate placeholder; bare initials on paper read
+     as artwork that failed to load. */
+  .monogram {
+    display: grid;
+    place-items: center;
+    width: 64px;
+    height: 64px;
+    flex: none;
+    border-radius: 10px;
+    background: linear-gradient(150deg, #1d3a27 0%, var(--color-forest) 100%);
+    box-shadow: inset 0 0 0 1px rgb(74 222 128 / 0.3);
+    color: var(--color-bright);
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 20px;
+    letter-spacing: 0.04em;
+    transition: box-shadow 0.2s ease;
+  }
+
+  /* The site's single hover affordance: a green rail wiping across the top
+     edge of anything clickable — cards, tiles, list rows. Applied nowhere else,
+     so the rail always means "this goes somewhere". */
+  .card-rail {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .card-rail:hover {
+    border-color: var(--color-signal-dim);
+    box-shadow: 0 1px 3px rgb(16 21 15 / 0.05);
+  }
+
+  .card-rail::before {
+    content: "";
+    position: absolute;
+    inset: 0 auto auto 0;
+    width: 100%;
+    height: 3px;
+    background: linear-gradient(90deg, var(--color-signal), var(--color-bright));
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.25s ease;
+  }
+
+  .card-rail:hover::before {
+    transform: scaleX(1);
+  }
+
+  .card-rail:hover .monogram {
+    box-shadow: inset 0 0 0 1px rgb(74 222 128 / 0.65), 0 0 18px rgb(74 222 128 / 0.18);
+  }
+
+  /* ── Assistant / feed bits ────────────────────────────────────────── */
+
+  .status-dot {
+    display: inline-block;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--color-bright);
+    flex-shrink: 0;
+  }
+
+  .agent-chip {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    border: 1px solid var(--color-signal-dim);
+    border-radius: var(--radius-card);
+    color: var(--color-signal);
+    background: rgb(30 122 70 / 0.06);
+    padding: 2px 7px;
+  }
+
+  .feed-caret {
+    color: var(--color-signal);
+  }
+
+  .streaming::after {
+    content: "▍";
+    color: var(--color-signal);
+    animation: blink 1s steps(2, start) infinite;
+  }
+
+  .think-dots::after {
+    content: "···";
+    letter-spacing: 0.2em;
+    animation: blink 1.2s steps(3, start) infinite;
+  }
+
+  @keyframes blink {
+    50% { opacity: 0; }
+  }
+
+  /* ── Entrance ─────────────────────────────────────────────────────── */
+
+  .rise {
+    animation: rise 0.5s ease-out both;
+  }
+
+  .rise-1 { animation-delay: 0.06s; }
+  .rise-2 { animation-delay: 0.12s; }
+  .rise-3 { animation-delay: 0.18s; }
+
+  @keyframes rise {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: none; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .rise { animation: none; }
+    .streaming::after,
+    .think-dots::after { animation: none; }
+
+    /* The panel still reads correctly frozen: the legacy estate on one
+       side, the platform on the other, the junction between them. */
+    .flow-packet { display: none; }
+    .flow-dot::after,
+    .service,
+    .service::before,
+    .legacy-code div { animation: none; }
+  }
+}

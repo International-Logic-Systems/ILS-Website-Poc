@@ -1,0 +1,143 @@
+@import 'tailwindcss';
+
+/**
+ * Admin dashboard theme.
+ *
+ * Loaded only by the admin root layout, so Tailwind's preflight never reaches
+ * the marketing site's hand-written stylesheet.
+ *
+ * The palette follows the public site: warm paper, forest for the dark
+ * sidebar, green for anything the operator acts on. The old indigo
+ * "interactive" hue is gone — a single-accent brand cannot carry a second
+ * one honestly — so action and affirmation are separated by weight instead
+ * of hue: deep green fills the invited click, bright green fills the
+ * affirmative one (publish, approve). Amber still means waiting on a human,
+ * red still means a refusal or a lapse; those are states, not brand.
+ */
+
+/* Font variables previously supplied by next/font/google class names.
+   Inter Tight is now vendored alongside Inter, so display uses its own face. */
+.admin-fonts {
+  --font-inter: 'Inter';
+  --font-inter-tight: 'Inter Tight';
+  --font-plex-mono: 'IBM Plex Mono';
+}
+
+@theme {
+  /* ILS brand — carried over from the public stylesheet */
+  --color-forest: #0e1b12;
+  --color-forest-raised: #17301f;
+  --color-green: #1e7a46;
+  --color-green-hover: #166137;
+  --color-green-soft: #e8f3ec;
+  --color-green-ring: #c7dbcd;
+  --color-bright: #4ade80;
+  --color-accent: #4ade80;
+
+  /* The action family — primary buttons, active nav, anything clickable */
+  --color-action: #1e7a46;
+  --color-action-hover: #166137;
+  --color-action-soft: #e8f3ec;
+  --color-action-ring: #c7dbcd;
+  --color-action-ink: #143a26;
+  --color-sage: #8a9a8d;
+
+  /* Grounds and text — the public site's paper, warmed rules */
+  --color-paper: #f7f6f1;
+  --color-card: #ffffff;
+  --color-ink: #10150f;
+  --color-slate: #3f4a41;
+  --color-muted: #6e7370;
+  --color-rule: #d8d5cb;
+  --color-rule-soft: #e4e2da;
+  --color-wash: #efede5;
+
+  /* States — not brand, so they keep their own hues */
+  --color-warn: #75530a;
+  --color-warn-soft: #faeed6;
+  --color-warn-ring: #d0b164;
+  --color-danger: #9e1c15;
+  --color-danger-soft: #fce9e7;
+  --color-danger-ring: #dd958e;
+
+  /* Faces */
+  --font-display: var(--font-inter-tight), 'Inter Tight', Helvetica, Arial, sans-serif;
+  --font-sans: var(--font-inter), 'Inter', Helvetica, Arial, sans-serif;
+  --font-mono: var(--font-plex-mono), 'IBM Plex Mono', 'Courier New', monospace;
+
+  --radius-card: 10px;
+}
+
+/* Tailwind v4 scans the whole project by default. Narrowing it to the files
+   that actually carry admin class names keeps the dev rebuild fast and stops
+   the marketing components contributing utilities nothing renders. */
+@source '../../app/(admin)';
+@source '../../components/admin';
+
+@layer base {
+  html {
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  body {
+    background: var(--color-paper);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+  }
+
+
+  /* The marketing site puts a green focus ring on everything. Keeping the same
+     habit here, in the same green, so keyboard operators are never guessing. */
+  *:focus-visible {
+    outline: 2px solid var(--color-action);
+    outline-offset: 2px;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-family: var(--font-display);
+    letter-spacing: -0.011em;
+  }
+}
+
+@layer utilities {
+  /* Tabular figures for anything that sits in a column and gets compared:
+     scores, counts, dates, contract numbers. */
+  .nums {
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+/* The projector test: a demo seen from twelve feet needs its scrollbars to not
+   be the most interesting thing on screen. */
+@layer base {
+  .scroll-slim {
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-rule) transparent;
+  }
+  .scroll-slim::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  .scroll-slim::-webkit-scrollbar-thumb {
+    background: var(--color-rule);
+    border-radius: 4px;
+  }
+  .scroll-slim::-webkit-scrollbar-track {
+    background: transparent;
+  }
+}
+
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}

@@ -1,0 +1,30 @@
+# Dependencies and build output
+node_modules/
+.next/
+out/
+build/
+*.tsbuildinfo
+next-env.d.ts
+
+# Secrets. .env.local holds ADMIN_SESSION_SECRET, the admin password hash and
+# SMTP credentials — committing it once means rotating all of them.
+.env
+.env.local
+.env*.local
+
+# Runtime state written by the running app, not source:
+#   published.json  what the admin has published
+#   settings.json   analytics ids set in the admin
+#   knowledge.json  the assistant's search index, rebuilt by `npm run build`
+# On a real host these belong on a persistent volume or in a datastore.
+/server/published.json
+/server/settings.json
+/server/knowledge.json
+
+# OS and editor noise
+.DS_Store
+Thumbs.db
+*.swp
+.idea/
+.vscode/*
+!.vscode/extensions.json
