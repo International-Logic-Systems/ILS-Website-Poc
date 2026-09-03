@@ -12,6 +12,7 @@
 import { AlertTriangle, RotateCcw, ShieldCheck, Zap } from 'lucide-react';
 import * as React from 'react';
 import { AnalyticsSettings } from '@/components/admin/analytics-settings';
+import { UserAdmin } from '@/components/admin/user-admin';
 import { Button } from '@/components/admin/ui/button';
 import {
   Dialog,
@@ -125,8 +126,9 @@ export default function SettingsPage() {
       />
 
       {/* The only setting here that changes the public site, so it leads. */}
-      <div className="mb-4">
+      <div className="mb-4 grid gap-4">
         <AnalyticsSettings />
+        <UserAdmin />
       </div>
 
       <div className="grid gap-4 lg:grid-cols-2">

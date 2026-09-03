@@ -7,6 +7,7 @@
  */
 
 import { SESSION_COOKIE, SESSION_TTL_MS, createToken, credentials, passwordMatches } from "@/lib/admin/auth";
+import { authenticate, usersAvailable } from "@/lib/admin/users";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -66,13 +67,32 @@ export async function POST(request: Request): Promise<Response> {
     return Response.json({ error: GENERIC }, { status: 400 });
   }
 
-  const ok = username === configured.user && (await passwordMatches(password));
-  if (!ok) {
+  /*
+   * Database first, environment second.
+   *
+   * Staff accounts live in Postgres with per-user salted scrypt hashes. The
+   * environment credential remains as a bootstrap and a fallback: it is how the
+   * very first sign-in happens before any row exists, and how the dashboard
+   * stays reachable if the database is down. Both paths report the same generic
+   * failure, so neither can be used to work out which accounts exist.
+   */
+  let identity: string | null = null;
+
+  if (usersAvailable()) {
+    const user = await authenticate(username, password);
+    if (user) identity = user.email;
+  }
+
+  if (!identity && username === configured.user && (await passwordMatches(password))) {
+    identity = configured.user;
+  }
+
+  if (!identity) {
     return Response.json({ error: GENERIC }, { status: 401 });
   }
 
   attempts.delete(ip);
-  const token = await createToken(configured.user, configured.secret);
+  const token = await createToken(identity, configured.secret);
 
   const secure = process.env.NODE_ENV === "production" ? " Secure;" : "";
   return new Response(JSON.stringify({ ok: true }), {

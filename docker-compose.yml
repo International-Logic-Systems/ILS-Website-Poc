@@ -1,0 +1,33 @@
+# Local Postgres for development.
+#
+#   docker compose up -d      start it
+#   docker compose down       stop it, keep the data
+#   docker compose down -v    stop it and wipe the data
+#
+# The data lives in a named volume, so restarting the container keeps the
+# database. Nothing here is production configuration: the password is a local
+# development credential and the port is published to localhost only.
+
+services:
+  postgres:
+    image: postgres:17-alpine
+    container_name: ils-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ils
+      POSTGRES_PASSWORD: ils_local_dev
+      POSTGRES_DB: ils
+    ports:
+      # Bound to 127.0.0.1 so the database is not reachable from the network.
+      - "127.0.0.1:5432:5432"
+    volumes:
+      - ils_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      # Compose waits for this before anything depending on it starts.
+      test: ["CMD-SHELL", "pg_isready -U ils -d ils"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  ils_pgdata:

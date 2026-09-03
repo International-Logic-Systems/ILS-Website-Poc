@@ -51,20 +51,48 @@ ephemeral, so publishing would fail or silently vanish. Either deploy to a
 long-lived Node host with a persistent volume, or move those two writes to a
 datastore first.
 
+## Database
+
+Postgres holds staff accounts and news articles. It is optional — everything
+degrades without it — but it is how the site is meant to run.
+
+```bash
+npm run db:up                                   # Postgres 17 in Docker
+npm run db:migrate                              # apply db/migrations/*.sql
+ADMIN_SEED_PASSWORD="ChangeMe-Now-2026" npm run db:seed   # first account
+npm run db:status                               # migrations + row counts
+npm run db:down                                 # stop (data is kept)
+```
+
+Add `DATABASE_URL` to `.env.local` (the value is in `.env.example`).
+
+**Accounts are invite-only.** There is no sign-up page anywhere in the
+application: `db:seed` creates the first administrator, and every account after
+that is created by a signed-in admin from Settings → Staff accounts. `invited_by`
+records who created each one. Passwords are per-user salted **scrypt**
+(`lib/admin/password.ts`) — the previous scheme was an unsalted SHA-256, which is
+both saltless and fast enough to brute-force.
+
+Migrations are plain SQL applied in filename order and recorded in
+`schema_migrations`, so re-running is safe. No ORM: the schema is small and SQL
+is what a reviewer can read.
+
 ## How content reaches the site
 
 ```
 lib/content.ts ─┐
-lib/vehicles.ts ─┼─► pages render          (edited in code)
+lib/vehicles.ts ─┼─► pages render                    (edited in code)
                  │
-admin dashboard ─┴─► server/published.json ─► /news and the home page
+Postgres ────────┴─► /news and the home page         (falls back to ↓)
+server/published.json                                (falls back to ↓)
+lib/content.ts seed list
 ```
 
-Most copy is typed data in `lib/`, edited by a developer. News is different: an
-operator publishes it in the admin, which writes `server/published.json` and
-revalidates the affected pages, so it is live on the next request with no
-deploy. Pages fall back to the seed list in `lib/content.ts` when that file does
-not exist.
+Most copy is typed data in `lib/`, edited by a developer. News is different: it
+comes from Postgres, with the admin-written JSON file and then the compiled seed
+list as fallbacks — so a database outage degrades to the last published file
+rather than an empty page, and a fresh clone still renders. Only rows with
+`status = 'published'` ever reach the public site.
 
 ## Subsystems worth knowing about
 
