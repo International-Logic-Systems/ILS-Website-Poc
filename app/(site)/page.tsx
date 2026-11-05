@@ -1,6 +1,6 @@
 import Link from "next/link";
 import SectionLabel from "@/components/SectionLabel";
-import MigrationHero from "@/components/MigrationHero";
+import ModernizationHero from "@/components/ModernizationHero";
 import { org, solutions, services, customers, sec } from "@/lib/content";
 import { getNews } from "@/lib/site-content";
 import { vehicles, statusOf } from "@/lib/vehicles";
@@ -19,40 +19,21 @@ export default async function Home() {
 
   return (
     <>
-      {/* Hero — the only place besides the nav that runs on forest */}
-      <section className="on-forest is-soft">
-        <div className="mx-auto grid max-w-[1180px] items-center gap-10 px-8 py-24 xl:grid-cols-[minmax(0,1fr)_minmax(0,540px)]">
-          <div>
-            <span className="kicker rise block">
-              <span className="opacity-50">//</span> AI-enabled software engineering · Federal
-            </span>
-            <h1 className="display rise rise-1 mt-[22px] text-[clamp(38px,3.9vw,54px)] font-extrabold leading-[1.06]">
-              Legacy systems, modernized at <span className="grad-text">mission speed</span>.
-            </h1>
-            <p className="rise rise-2 mt-6 max-w-[540px] text-[18px] leading-[1.7] text-soft">
-              {org.heroLede}
-            </p>
-            <div className="rise rise-3 mt-9 flex flex-wrap items-center gap-4">
-              <Link href="/contact" className="btn-primary">
-                Schedule a capability briefing
-              </Link>
-              <Link href="/contracts" className="btn-ghost">
-                View contract vehicles
-              </Link>
-            </div>
-            {/* The marks a contracting officer checks first, stated up front
-                rather than buried on a compliance page. */}
-            <ul className="rise rise-3 mt-10 flex flex-wrap gap-x-px gap-y-px">
-              {org.compliance.map((c) => (
-                <li key={c} className="chip">
-                  {c}
-                </li>
-              ))}
-            </ul>
-          </div>
-          <div className="rise rise-2">
-            <MigrationHero embedded />
-          </div>
+      {/* Hero — a full-viewport WebGL landing splash, dark by design. */}
+      <ModernizationHero />
+
+      {/* Compliance strip — the marks a contracting officer checks first, held
+          just under the splash rather than buried on a compliance page. */}
+      <section className="border-b border-line bg-forest">
+        <div className="mx-auto flex max-w-[1180px] flex-wrap items-center gap-x-8 gap-y-3 px-8 py-5">
+          <span className="mono-label text-white/60">Compliance</span>
+          <ul className="flex flex-wrap gap-x-px gap-y-px">
+            {org.compliance.map((c) => (
+              <li key={c} className="chip">
+                {c}
+              </li>
+            ))}
+          </ul>
         </div>
       </section>
 
